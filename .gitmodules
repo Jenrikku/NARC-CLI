@@ -1,0 +1,3 @@
+[submodule "NARCSharp"]
+	path = NARCSharp
+	url = https://github.com/Jenrikku/NARCSharp
