@@ -126,7 +126,7 @@ void ParseArgs(string[] args, int currIdx)
 
                     if (!Directory.Exists(input))
                     {
-                        Console.WriteLine($"\"{input}\" does not exist.");
+                        Console.WriteLine($"\"{input}\" does not exist or is not a directory.");
                         return;
                     }
 
