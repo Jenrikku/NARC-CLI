@@ -94,7 +94,10 @@ void ParseArgs(string[] args, int currIdx)
                         return;
                     }
 
-                    narc = NARCParser.Read(File.ReadAllBytes(narcPath));
+                    if (File.Exists(narcPath))
+                        narc = NARCParser.Read(File.ReadAllBytes(narcPath));
+                    else
+                        narc = new();
 
                     if (forceNameless)
                         narc.Nameless = true;
@@ -103,7 +106,10 @@ void ParseArgs(string[] args, int currIdx)
                         narc.HasAlignment = false;
 
                     foreach (string path in auxPaths)
-                        AddPathToBranch(narc.RootNode, path, path);
+                    {
+                        string absPath = Path.GetFullPath(path);
+                        AddPathToBranch(narc.RootNode, absPath, absPath);
+                    }
 
                     File.WriteAllBytes(narcPath, NARCParser.Write(narc));
                     return;
