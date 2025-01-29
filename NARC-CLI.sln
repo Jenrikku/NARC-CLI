@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NARC-CLI", "NARC-CLI\NARC-CLI.csproj", "{7AC7E55D-A188-4CB7-AD83-817F29B58AEE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NARCSharp", "NARCSharp", "{DEEEA364-25AF-4692-8CDB-C19263492617}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NARCSharp", "NARCSharp\NARCSharp\NARCSharp.csproj", "{24E4AD63-2325-47F6-9D49-B84975A1B432}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7AC7E55D-A188-4CB7-AD83-817F29B58AEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AC7E55D-A188-4CB7-AD83-817F29B58AEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AC7E55D-A188-4CB7-AD83-817F29B58AEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AC7E55D-A188-4CB7-AD83-817F29B58AEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24E4AD63-2325-47F6-9D49-B84975A1B432}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24E4AD63-2325-47F6-9D49-B84975A1B432}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24E4AD63-2325-47F6-9D49-B84975A1B432}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24E4AD63-2325-47F6-9D49-B84975A1B432}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{24E4AD63-2325-47F6-9D49-B84975A1B432} = {DEEEA364-25AF-4692-8CDB-C19263492617}
+	EndGlobalSection
+EndGlobal
