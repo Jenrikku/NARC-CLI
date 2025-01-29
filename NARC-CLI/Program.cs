@@ -136,6 +136,14 @@ void ParseArgs(string[] args, int currIdx)
 
                 case "l":
                     narc = NARCParser.Read(File.ReadAllBytes(narcPath));
+
+                    if (narc.Nameless)
+                    {
+                        Console.WriteLine("The NARC is nameless and has no file tree.");
+                        Console.WriteLine($"It has a total of {narc.RootNode.Count()} files.");
+                        return;
+                    }
+
                     PrintBranch(narc.RootNode, 0);
                     return;
 
