@@ -9,7 +9,7 @@ List<string> auxPaths = new();
 
 // The program starts here:
 
-if (args.Length < 0)
+if (args.Length == 0)
     Help();
 
 for (int i = 1; i < args.Length; i++)
@@ -80,8 +80,9 @@ void ParseArgs(string[] args, int currIdx)
                     narc = NARCParser.Read(File.ReadAllBytes(narcPath));
 
                     string output =
-                        auxPaths.Count > 0 ? auxPaths[1] : Directory.GetCurrentDirectory();
+                        auxPaths.Count > 0 ? auxPaths[0] : Directory.GetCurrentDirectory();
 
+                    Directory.CreateDirectory(output);
                     ExtractBranchNode(narc.RootNode, output);
                     return;
 
@@ -102,7 +103,7 @@ void ParseArgs(string[] args, int currIdx)
                         narc.HasAlignment = false;
 
                     foreach (string path in auxPaths)
-                        AddPathToBranch(narc.RootNode, path);
+                        AddPathToBranch(narc.RootNode, path, path);
 
                     File.WriteAllBytes(narcPath, NARCParser.Write(narc));
                     return;
@@ -115,11 +116,21 @@ void ParseArgs(string[] args, int currIdx)
                         return;
                     }
 
-                    string input = auxPaths[1];
+                    string input = auxPaths[0];
+
+                    if (!Directory.Exists(input))
+                    {
+                        Console.WriteLine($"\"{input}\" does not exist.");
+                        return;
+                    }
 
                     narc = new() { Nameless = forceNameless, HasAlignment = !forceNoAlign };
 
-                    AddPathToBranch(narc.RootNode, input);
+                    DirectoryInfo dir = new(input);
+
+                    foreach (FileSystemInfo info in dir.EnumerateFileSystemInfos())
+                        AddPathToBranch(narc.RootNode, input, info.FullName);
+
                     File.WriteAllBytes(narcPath, NARCParser.Write(narc));
                     return;
 
@@ -173,7 +184,58 @@ void ParseArgs(string[] args, int currIdx)
 
                     narc = NARCParser.Read(File.ReadAllBytes(narcPath));
 
-                    throw new NotImplementedException();
+                    {
+                        var root = narc.RootNode;
+                        var currBranch = root;
+
+                        string pathIn = auxPaths[0];
+                        string pathOut = auxPaths[1];
+
+                        INode<byte[]>? child = root.FindChildByPath<LeafNode<byte[]>>(pathIn);
+                        child ??= root.FindChildByPath<BranchNode<byte[]>>(pathIn);
+
+                        if (child is null)
+                        {
+                            Console.WriteLine($"Node with name \"{pathIn}\" does not exist.");
+                            return;
+                        }
+
+                        string[] pathTokens = pathOut.Split(
+                            '/',
+                            StringSplitOptions.RemoveEmptyEntries
+                        );
+
+                        for (int i = 0; i < pathTokens.Length - 1; i++)
+                        {
+                            string token = pathTokens[i];
+
+                            var branch = currBranch.FindChildByPath<BranchNode<byte[]>>(token);
+
+                            if (branch is null)
+                            {
+                                branch = new(token);
+                                currBranch.AddChild(branch);
+                            }
+
+                            currBranch = branch;
+                        }
+
+                        child.Name = pathTokens[^1]; // Last element
+
+                        if (child is LeafNode<byte[]> leaf)
+                        {
+                            leaf.Parent?.RemoveChild(leaf);
+                            currBranch.AddChild(leaf);
+                        }
+                        else if (child is BranchNode<byte[]> branch)
+                        {
+                            branch.Parent?.RemoveChild(branch);
+                            currBranch.AddChild(branch);
+                        }
+                    }
+
+                    File.WriteAllBytes(narcPath, NARCParser.Write(narc));
+                    return;
 
                 default:
                     Help();
@@ -194,6 +256,7 @@ void ExtractBranchNode(BranchNode<byte[]> node, string path)
     foreach (BranchNode<byte[]> branch in node.ChildBranches)
     {
         string newPath = Path.Join(path, branch.Name);
+        Directory.CreateDirectory(newPath);
         ExtractBranchNode(branch, newPath);
     }
 
@@ -204,19 +267,25 @@ void ExtractBranchNode(BranchNode<byte[]> node, string path)
     }
 }
 
-void AddPathToBranch(BranchNode<byte[]> node, string path)
+void AddPathToBranch(BranchNode<byte[]> node, string basePath, string path)
 {
     string name = Path.GetFileName(path);
+    string relativePath = Path.GetRelativePath(basePath, path);
 
     if (Directory.Exists(path))
     {
         DirectoryInfo dir = new(path);
 
-        var branch = node.FindChildByPath<BranchNode<byte[]>>(path);
-        branch ??= new(name);
+        var branch = node.FindChildByPath<BranchNode<byte[]>>(relativePath);
+
+        if (branch is null)
+        {
+            branch = new(name);
+            node.AddChild(branch);
+        }
 
         foreach (FileSystemInfo info in dir.EnumerateFileSystemInfos())
-            AddPathToBranch(branch, info.FullName);
+            AddPathToBranch(branch, basePath, info.FullName);
 
         return;
     }
@@ -225,8 +294,13 @@ void AddPathToBranch(BranchNode<byte[]> node, string path)
     {
         byte[] bytes = File.ReadAllBytes(path);
 
-        var leaf = node.FindChildByPath<LeafNode<byte[]>>(path);
-        leaf ??= new(name);
+        var leaf = node.FindChildByPath<LeafNode<byte[]>>(relativePath);
+
+        if (leaf is null)
+        {
+            leaf = new(name);
+            node.AddChild(leaf);
+        }
 
         leaf.Contents = bytes;
         return;
