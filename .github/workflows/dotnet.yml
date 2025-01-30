@@ -1,0 +1,38 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        runtime: [osx-arm64, osx-x64, linux-x64, win-x64]
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Git submodule update
+      run: git submodule update --init
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Build
+      run: dotnet publish -c Release -r ${{ matrix.runtime }}
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.runtime }}
+        path: NARC-CLI/bin/Release/net9.0/${{ matrix.runtime }}/publish
