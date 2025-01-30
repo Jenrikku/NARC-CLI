@@ -28,16 +28,18 @@ static void Help()
         narc a file.narc file1 file2 folder ...
         narc c file.narc input
         narc c file.narc input --noalign --nameless
+        narc r file.narc input target_path
         narc d file.narc file1 file2 folder ...
-        narc r file.narc name1 name2
+        narc m file.narc name1 name2
 
     Available options:
         x           Extracts the contents of the NARC file.
         a           Adds files to a new or an existing NARC file.
         c           Creates a new NARC file from a given path.
-        l           Lists the contents of the NARC file.
-        d           Deletes files or folder in the NARC file.
-        r           Rename a file in the NARC file.
+        r           Replace a single file in the NARC with another one.
+        l           Lists the contents of the NARC.
+        d           Deletes files or folder in the NARC.
+        m           Move a file in the NARC.
 
     Other options:
         --help      Show help and exit.
@@ -140,6 +142,77 @@ void ParseArgs(string[] args, int currIdx)
                     File.WriteAllBytes(narcPath, NARCParser.Write(narc));
                     return;
 
+                case "r":
+                    if (auxPaths.Count < 2)
+                    {
+                        Console.WriteLine("Too few arguments.");
+                        Help();
+                        return;
+                    }
+
+                    if (File.Exists(narcPath))
+                        narc = NARCParser.Read(File.ReadAllBytes(narcPath));
+                    else
+                        narc = new();
+
+                    if (forceNameless)
+                        narc.Nameless = true;
+
+                    if (forceNoAlign)
+                        narc.HasAlignment = false;
+
+                    {
+                        var root = narc.RootNode;
+                        var currBranch = root;
+
+                        string inPath = auxPaths[0];
+                        string targetPath = auxPaths[1];
+
+                        if (!File.Exists(inPath))
+                        {
+                            Console.WriteLine($"\"{inPath}\" does not exist or is not a file.");
+                            return;
+                        }
+
+                        byte[] bytes = File.ReadAllBytes(inPath);
+
+                        string[] pathTokens = targetPath.Split(
+                            '/',
+                            StringSplitOptions.RemoveEmptyEntries
+                        );
+
+                        // Create branches if needed
+                        for (int i = 0; i < pathTokens.Length - 1; i++)
+                        {
+                            string token = pathTokens[i];
+
+                            var branch = currBranch.FindChildByPath<BranchNode<byte[]>>(token);
+
+                            if (branch is null)
+                            {
+                                branch = new(token);
+                                currBranch.AddChild(branch);
+                            }
+
+                            currBranch = branch;
+                        }
+
+                        string name = pathTokens[^1]; // Last element
+
+                        var leaf = currBranch.FindChildByPath<LeafNode<byte[]>>(name);
+
+                        if (leaf is not null)
+                            leaf.Contents = bytes;
+                        else
+                        {
+                            LeafNode<byte[]> newLeaf = new(name, bytes);
+                            currBranch.AddChild(newLeaf);
+                        }
+                    }
+
+                    File.WriteAllBytes(narcPath, NARCParser.Write(narc));
+                    return;
+
                 case "l":
                     narc = NARCParser.Read(File.ReadAllBytes(narcPath));
 
@@ -189,7 +262,7 @@ void ParseArgs(string[] args, int currIdx)
                     File.WriteAllBytes(narcPath, NARCParser.Write(narc));
                     return;
 
-                case "r":
+                case "m":
                     if (auxPaths.Count < 2)
                     {
                         Console.WriteLine("Too few arguments.");
@@ -220,6 +293,7 @@ void ParseArgs(string[] args, int currIdx)
                             StringSplitOptions.RemoveEmptyEntries
                         );
 
+                        // Create branches if needed
                         for (int i = 0; i < pathTokens.Length - 1; i++)
                         {
                             string token = pathTokens[i];
