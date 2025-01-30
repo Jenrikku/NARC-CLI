@@ -1,4 +1,4 @@
-﻿using NARCSharp;
+using NARCSharp;
 using NewGear.Trees.TrueTree;
 
 bool forceNameless = false;
@@ -240,11 +240,25 @@ void ParseArgs(string[] args, int currIdx)
                         if (child is LeafNode<byte[]> leaf)
                         {
                             leaf.Parent?.RemoveChild(leaf);
+
+                            var childLeaf = currBranch.FindChildByPath<LeafNode<byte[]>>(leaf.Name);
+
+                            if (childLeaf is not null)
+                                currBranch.RemoveChild(childLeaf);
+
                             currBranch.AddChild(leaf);
                         }
                         else if (child is BranchNode<byte[]> branch)
                         {
                             branch.Parent?.RemoveChild(branch);
+
+                            var childBranch = currBranch.FindChildByPath<BranchNode<byte[]>>(
+                                branch.Name
+                            );
+
+                            if (childBranch is not null)
+                                currBranch.RemoveChild(childBranch);
+
                             currBranch.AddChild(branch);
                         }
                     }
