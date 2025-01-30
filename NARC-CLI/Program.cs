@@ -186,6 +186,7 @@ void ParseArgs(string[] args, int currIdx)
                         }
                     }
 
+                    File.WriteAllBytes(narcPath, NARCParser.Write(narc));
                     return;
 
                 case "r":
