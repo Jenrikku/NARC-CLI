@@ -1,5 +1,7 @@
 # NARC-CLI
 
+[![AUR](https://img.shields.io/badge/narc--cli-AUR-blue)](https://aur.archlinux.org/packages/narc-cli)
+
 A quick NARC cli app for reading, modifying and creating NARC files.
 
 ## Available options
