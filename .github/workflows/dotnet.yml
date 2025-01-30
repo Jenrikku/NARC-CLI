@@ -29,8 +29,11 @@ jobs:
       with:
         dotnet-version: 9.0.x
 
-    - name: Build
-      run: dotnet publish -c Release -r ${{ matrix.runtime }}
+    - name: Restore
+      run: dotnet restore -r ${{ matrix.runtime }}
+
+    - name: Publish
+      run: dotnet publish -c Release -r ${{ matrix.runtime }} --no-restore
 
     - uses: actions/upload-artifact@v4
       with:
