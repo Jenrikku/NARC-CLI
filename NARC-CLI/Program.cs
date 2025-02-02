@@ -426,7 +426,8 @@ void AddPathToBranch(BranchNode<byte[]> node, string basePath, string path)
     {
         byte[] bytes = File.ReadAllBytes(path);
 
-        var leaf = node.FindChildByPath<LeafNode<byte[]>>(relativePath);
+        string leafPath = Path.Join(relativePath, name);
+        var leaf = node.FindChildByPath<LeafNode<byte[]>>(leafPath);
 
         if (leaf is null)
         {
