@@ -111,6 +111,8 @@ void ParseArgs(string[] args, int currIdx)
                     string output =
                         auxPaths.Count > 0 ? auxPaths[0] : Directory.GetCurrentDirectory();
 
+                    output = Path.Join(output, Path.GetFileNameWithoutExtension(narcPath));
+
                     Directory.CreateDirectory(output);
                     ExtractBranchNode(narc.RootNode, output);
                     return;
